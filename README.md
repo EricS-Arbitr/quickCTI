@@ -28,8 +28,8 @@ Quick CTI automates the process of gathering cyber threat intelligence (CTI) abo
 
 1. Clone this repository:
 ```bash
-git clone https://github.com/EricS-Arbitr/quick_cti.git
-cd quick_cti
+git clone https://github.com/EricS-Arbitr/quickCTI.git
+cd quickCTI
 ```
 
 2. Install dependencies:
@@ -43,31 +43,31 @@ pip install requests
 
 Extract data for a specific threat group:
 ```bash
-python quick_cti.py APT29
+python quickCTI.py APT29
 ```
 
 For multi-word names, use quotes:
 ```bash
-python quick_cti.py "Lazarus Group"
+python quickCTI.py "Lazarus Group"
 ```
 
 ### List All Available Threat Groups
 
 ```bash
-python quick_cti.py list
+python quickCTI.py list
 ```
 
 ### Interactive Mode
 
 Run without arguments to enter interactive mode:
 ```bash
-python quick_cti.py
+python quickCTI.py
 ```
 
 ### Command-Line Options
 
 ```
-usage: quick_cti.py [-h] [-v] [threat_group ...]
+usage: quickCTI.py [-h] [-v] [threat_group ...]
 
 positional arguments:
   threat_group   Name or alias of the threat group (e.g., APT29, "Lazarus Group")

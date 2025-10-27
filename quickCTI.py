@@ -784,7 +784,7 @@ For more information: https://attack.mitre.org/
     
     if not bundle:
         print("\n[!] Threat group not found. Try running with 'list' to see all available groups:")
-        print(f"    python quick_cti.py list")
+        print(f"    python quickCTI.py list")
         return None
     
     # Generate summary report
