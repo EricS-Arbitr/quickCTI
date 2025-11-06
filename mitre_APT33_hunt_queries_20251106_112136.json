@@ -1,0 +1,231 @@
+{
+  "simple_ioc_searches": [
+    {
+      "description": "Search for PowerSploit indicators",
+      "sql_query": "\n-- Search for PowerSploit in process execution logs\nSELECT timestamp, host, process_name, command_line, parent_process, user\nFROM process_logs\nWHERE process_name LIKE '%powersploit%'\n   OR command_line LIKE '%powersploit%'\nORDER BY timestamp DESC;",
+      "log_types": [
+        "Windows Event Logs",
+        "Sysmon",
+        "EDR"
+      ]
+    },
+    {
+      "description": "Search for AutoIt backdoor indicators",
+      "sql_query": "\n-- Search for AutoIt backdoor in process execution logs\nSELECT timestamp, host, process_name, command_line, parent_process, user\nFROM process_logs\nWHERE process_name LIKE '%autoit backdoor%'\n   OR command_line LIKE '%autoit backdoor%'\nORDER BY timestamp DESC;",
+      "log_types": [
+        "Windows Event Logs",
+        "Sysmon",
+        "EDR"
+      ]
+    },
+    {
+      "description": "Search for PoshC2 indicators",
+      "sql_query": "\n-- Search for PoshC2 in process execution logs\nSELECT timestamp, host, process_name, command_line, parent_process, user\nFROM process_logs\nWHERE process_name LIKE '%poshc2%'\n   OR command_line LIKE '%poshc2%'\nORDER BY timestamp DESC;",
+      "log_types": [
+        "Windows Event Logs",
+        "Sysmon",
+        "EDR"
+      ]
+    },
+    {
+      "description": "Search for Ruler indicators",
+      "sql_query": "\n-- Search for Ruler in process execution logs\nSELECT timestamp, host, process_name, command_line, parent_process, user\nFROM process_logs\nWHERE process_name LIKE '%ruler%'\n   OR command_line LIKE '%ruler%'\nORDER BY timestamp DESC;",
+      "log_types": [
+        "Windows Event Logs",
+        "Sysmon",
+        "EDR"
+      ]
+    },
+    {
+      "description": "Search for Mimikatz indicators",
+      "sql_query": "\n-- Search for Mimikatz in process execution logs\nSELECT timestamp, host, process_name, command_line, parent_process, user\nFROM process_logs\nWHERE process_name LIKE '%mimikatz%'\n   OR command_line LIKE '%mimikatz%'\nORDER BY timestamp DESC;",
+      "log_types": [
+        "Windows Event Logs",
+        "Sysmon",
+        "EDR"
+      ]
+    }
+  ],
+  "behavioral_patterns": [
+    {
+      "description": "Detect credential access attempts",
+      "sql_query": "\n-- LSASS access and credential dumping\nSELECT timestamp, host, process_name, command_line, user, target_process\nFROM process_logs\nWHERE (\n    -- LSASS access\n    target_process = 'lsass.exe'\n    -- Credential dumping tools\n    OR command_line LIKE '%procdump%lsass%'\n    OR command_line LIKE '%mimikatz%'\n    OR command_line LIKE '%sekurlsa%'\n    OR process_name IN ('procdump.exe', 'procdump64.exe')\n    -- Registry credential access\n    OR command_line LIKE '%reg save%HKLM\\SAM%'\n    OR command_line LIKE '%reg save%HKLM\\SECURITY%'\n)\nORDER BY timestamp DESC;",
+      "log_types": [
+        "Windows Event Logs",
+        "Sysmon",
+        "EDR"
+      ],
+      "technique_id": "T1003.005",
+      "technique_name": "Cached Domain Credentials"
+    },
+    {
+      "description": "Detect spearphishing email delivery and execution",
+      "sql_query": "\n-- Spearphishing detection: Email with attachment followed by execution\nSELECT \n    e.timestamp AS email_time,\n    e.sender, e.recipient, e.subject, e.attachment_name,\n    p.timestamp AS exec_time,\n    p.process_name, p.command_line, p.parent_process\nFROM email_logs e\nJOIN process_logs p \n    ON e.recipient_host = p.host \n    AND p.timestamp BETWEEN e.timestamp AND e.timestamp + INTERVAL '5 minutes'\nWHERE e.attachment_name LIKE '%.exe' \n   OR e.attachment_name LIKE '%.zip'\n   OR e.attachment_name LIKE '%.docm'\n   OR e.attachment_name LIKE '%.xlsm'\nORDER BY e.timestamp DESC;",
+      "log_types": [
+        "Email Gateway",
+        "Windows Event Logs",
+        "Sysmon"
+      ],
+      "technique_id": "T1566.001",
+      "technique_name": "Spearphishing Attachment"
+    },
+    {
+      "description": "Detect credential access attempts",
+      "sql_query": "\n-- LSASS access and credential dumping\nSELECT timestamp, host, process_name, command_line, user, target_process\nFROM process_logs\nWHERE (\n    -- LSASS access\n    target_process = 'lsass.exe'\n    -- Credential dumping tools\n    OR command_line LIKE '%procdump%lsass%'\n    OR command_line LIKE '%mimikatz%'\n    OR command_line LIKE '%sekurlsa%'\n    OR process_name IN ('procdump.exe', 'procdump64.exe')\n    -- Registry credential access\n    OR command_line LIKE '%reg save%HKLM\\SAM%'\n    OR command_line LIKE '%reg save%HKLM\\SECURITY%'\n)\nORDER BY timestamp DESC;",
+      "log_types": [
+        "Windows Event Logs",
+        "Sysmon",
+        "EDR"
+      ],
+      "technique_id": "T1003.001",
+      "technique_name": "LSASS Memory"
+    },
+    {
+      "description": "Detect spearphishing email delivery and execution",
+      "sql_query": "\n-- Spearphishing detection: Email with attachment followed by execution\nSELECT \n    e.timestamp AS email_time,\n    e.sender, e.recipient, e.subject, e.attachment_name,\n    p.timestamp AS exec_time,\n    p.process_name, p.command_line, p.parent_process\nFROM email_logs e\nJOIN process_logs p \n    ON e.recipient_host = p.host \n    AND p.timestamp BETWEEN e.timestamp AND e.timestamp + INTERVAL '5 minutes'\nWHERE e.attachment_name LIKE '%.exe' \n   OR e.attachment_name LIKE '%.zip'\n   OR e.attachment_name LIKE '%.docm'\n   OR e.attachment_name LIKE '%.xlsm'\nORDER BY e.timestamp DESC;",
+      "log_types": [
+        "Email Gateway",
+        "Windows Event Logs",
+        "Sysmon"
+      ],
+      "technique_id": "T1566.002",
+      "technique_name": "Spearphishing Link"
+    }
+  ],
+  "chained_events": [
+    {
+      "chain_name": "Initial Compromise to Persistence",
+      "description": "Detect initial access followed by execution and persistence establishment",
+      "stages": [
+        "initial-access",
+        "execution",
+        "persistence"
+      ],
+      "sql_query": "\n-- Multi-stage detection: Email \u2192 Execution \u2192 Persistence\nWITH email_events AS (\n    SELECT timestamp as email_time, recipient_host, attachment_name\n    FROM email_logs\n    WHERE attachment_name LIKE '%.exe' OR attachment_name LIKE '%.zip'\n),\nexecution_events AS (\n    SELECT timestamp as exec_time, host, process_name, command_line, parent_process\n    FROM process_logs\n    WHERE parent_process IN ('outlook.exe', 'winword.exe', 'excel.exe')\n),\npersistence_events AS (\n    SELECT timestamp as persist_time, host, registry_key, registry_value\n    FROM registry_logs\n    WHERE registry_key LIKE '%\\Run%' \n       OR registry_key LIKE '%\\RunOnce%'\n)\nSELECT \n    e.email_time, e.recipient_host, e.attachment_name,\n    ex.exec_time, ex.process_name, ex.command_line,\n    p.persist_time, p.registry_key, p.registry_value\nFROM email_events e\nJOIN execution_events ex \n    ON e.recipient_host = ex.host \n    AND ex.exec_time BETWEEN e.email_time AND e.email_time + INTERVAL '10 minutes'\nJOIN persistence_events p \n    ON ex.host = p.host \n    AND p.persist_time BETWEEN ex.exec_time AND ex.exec_time + INTERVAL '5 minutes'\nORDER BY e.email_time DESC;",
+      "log_types": [
+        "Email Gateway",
+        "Windows Event Logs",
+        "Sysmon",
+        "EDR"
+      ],
+      "time_window": "10-15 minutes",
+      "techniques": [
+        "T1566.001",
+        "T1566.002",
+        "T1053.005",
+        "T1546.003",
+        "T1059.001",
+        "T1547.001",
+        "T1078",
+        "T1059.005",
+        "T1078.004",
+        "T1203",
+        "T1204.002",
+        "T1204.001"
+      ]
+    },
+    {
+      "chain_name": "Discovery and Lateral Movement",
+      "description": "Detect reconnaissance followed by lateral movement attempts",
+      "stages": [
+        "execution",
+        "discovery",
+        "lateral-movement"
+      ],
+      "sql_query": "\n-- Detect discovery commands followed by lateral movement\nWITH discovery_commands AS (\n    SELECT timestamp as disc_time, host, user, command_line\n    FROM process_logs\n    WHERE command_line LIKE '%net view%'\n       OR command_line LIKE '%net user%'\n       OR command_line LIKE '%net group%'\n       OR command_line LIKE '%nltest%'\n       OR command_line LIKE '%dsquery%'\n       OR command_line LIKE '%ipconfig%'\n       OR command_line LIKE '%whoami%'\n),\nlateral_movement AS (\n    SELECT timestamp as lat_time, src_host, dst_host, user, service_name\n    FROM authentication_logs\n    WHERE event_type = 'RemoteLogon'\n       OR service_name IN ('psexec', 'wmi', 'winrm')\n)\nSELECT \n    d.disc_time, d.host as source_host, d.user, d.command_line,\n    l.lat_time, l.dst_host as target_host, l.service_name\nFROM discovery_commands d\nJOIN lateral_movement l \n    ON d.host = l.src_host \n    AND d.user = l.user\n    AND l.lat_time BETWEEN d.disc_time AND d.disc_time + INTERVAL '30 minutes'\nORDER BY d.disc_time DESC;",
+      "log_types": [
+        "Windows Event Logs",
+        "Sysmon",
+        "Network Logs"
+      ],
+      "time_window": "30 minutes",
+      "techniques": [
+        "T1040"
+      ]
+    },
+    {
+      "chain_name": "Credential Theft to Data Exfiltration",
+      "description": "Detect credential dumping followed by data staging and exfiltration",
+      "stages": [
+        "credential-access",
+        "collection",
+        "exfiltration"
+      ],
+      "sql_query": "\n-- Credential access \u2192 Data staging \u2192 Exfiltration\nWITH credential_access AS (\n    SELECT timestamp as cred_time, host, user, process_name, command_line\n    FROM process_logs\n    WHERE target_process = 'lsass.exe'\n       OR command_line LIKE '%mimikatz%'\n       OR command_line LIKE '%procdump%lsass%'\n),\ndata_staging AS (\n    SELECT timestamp as stage_time, host, user, file_path, file_size\n    FROM file_logs\n    WHERE (file_path LIKE '%.zip' OR file_path LIKE '%.rar' OR file_path LIKE '%.7z')\n      AND file_size > 10000000  -- Files > 10MB\n),\nexfil_activity AS (\n    SELECT timestamp as exfil_time, src_ip, dst_ip, bytes_sent, protocol\n    FROM network_logs\n    WHERE bytes_sent > 50000000  -- Large outbound transfer\n      AND dst_ip NOT IN (SELECT ip FROM known_good_destinations)\n)\nSELECT \n    ca.cred_time, ca.host, ca.user, ca.process_name,\n    ds.stage_time, ds.file_path, ds.file_size,\n    ea.exfil_time, ea.dst_ip, ea.bytes_sent\nFROM credential_access ca\nJOIN data_staging ds \n    ON ca.host = ds.host \n    AND ds.stage_time BETWEEN ca.cred_time AND ca.cred_time + INTERVAL '2 hours'\nJOIN exfil_activity ea \n    ON ds.host = ea.src_ip \n    AND ea.exfil_time BETWEEN ds.stage_time AND ds.stage_time + INTERVAL '1 hour'\nORDER BY ca.cred_time DESC;",
+      "log_types": [
+        "Windows Event Logs",
+        "Sysmon",
+        "Network Logs",
+        "Firewall",
+        "Proxy"
+      ],
+      "time_window": "2-3 hours",
+      "techniques": [
+        "T1552.001",
+        "T1003.005",
+        "T1560.001",
+        "T1555.003",
+        "T1552.006",
+        "T1003.001",
+        "T1110.003",
+        "T1003.004",
+        "T1555",
+        "T1048.003",
+        "T1040"
+      ]
+    },
+    {
+      "chain_name": "PowerShell C2 Callback",
+      "description": "Detect PowerShell execution immediately followed by network connection",
+      "stages": [
+        "execution",
+        "command-and-control"
+      ],
+      "sql_query": "\n-- PowerShell execution with immediate network callback\nWITH powershell_exec AS (\n    SELECT timestamp as ps_time, host, process_id, command_line, user\n    FROM process_logs\n    WHERE process_name IN ('powershell.exe', 'pwsh.exe')\n      AND (command_line LIKE '%DownloadString%'\n           OR command_line LIKE '%WebClient%'\n           OR command_line LIKE '%Net.Sockets%'\n           OR command_line LIKE '%-enc%')\n),\nnetwork_connections AS (\n    SELECT timestamp as conn_time, src_ip, dst_ip, dst_port, process_id\n    FROM network_logs\n    WHERE dst_port IN (80, 443, 8080, 8443)\n)\nSELECT \n    ps.ps_time, ps.host, ps.user, ps.command_line,\n    nc.conn_time, nc.dst_ip, nc.dst_port,\n    EXTRACT(EPOCH FROM (nc.conn_time - ps.ps_time)) as seconds_between\nFROM powershell_exec ps\nJOIN network_connections nc \n    ON ps.host = nc.src_ip \n    AND ps.process_id = nc.process_id\n    AND nc.conn_time BETWEEN ps.ps_time AND ps.ps_time + INTERVAL '2 minutes'\nORDER BY ps.ps_time DESC;",
+      "log_types": [
+        "Windows Event Logs",
+        "Sysmon",
+        "Network Logs",
+        "Firewall"
+      ],
+      "time_window": "2 minutes",
+      "techniques": [
+        "T1059.001",
+        "T1071"
+      ]
+    }
+  ],
+  "anomaly_detection": [
+    {
+      "anomaly_type": "Rare Process-Parent Relationship",
+      "description": "Detect unusual parent-child process relationships indicative of compromise",
+      "sql_query": "\n-- Detect anomalous process relationships\nWITH normal_relationships AS (\n    SELECT parent_process, process_name, COUNT(*) as frequency\n    FROM process_logs\n    WHERE timestamp > CURRENT_DATE - INTERVAL '30 days'\n    GROUP BY parent_process, process_name\n    HAVING COUNT(*) > 10  -- Seen more than 10 times = \"normal\"\n)\nSELECT p.timestamp, p.host, p.user, p.parent_process, p.process_name, p.command_line\nFROM process_logs p\nLEFT JOIN normal_relationships nr \n    ON p.parent_process = nr.parent_process \n    AND p.process_name = nr.process_name\nWHERE nr.frequency IS NULL  -- Not in our \"normal\" set\n  AND p.parent_process NOT IN ('explorer.exe', 'services.exe', 'svchost.exe')\nORDER BY p.timestamp DESC;",
+      "log_types": [
+        "Windows Event Logs",
+        "Sysmon"
+      ],
+      "baseline_required": true
+    },
+    {
+      "anomaly_type": "Unusual Outbound Connections",
+      "description": "Detect hosts making connections to rare/new external IPs",
+      "sql_query": "\n-- Identify connections to previously unseen destinations\nWITH historical_destinations AS (\n    SELECT DISTINCT dst_ip\n    FROM network_logs\n    WHERE timestamp BETWEEN CURRENT_DATE - INTERVAL '30 days' AND CURRENT_DATE - INTERVAL '1 day'\n),\nrecent_connections AS (\n    SELECT timestamp, src_ip, dst_ip, dst_port, bytes_sent\n    FROM network_logs\n    WHERE timestamp > CURRENT_DATE - INTERVAL '1 day'\n      AND dst_ip NOT IN (SELECT ip FROM internal_ip_ranges)\n)\nSELECT rc.*\nFROM recent_connections rc\nLEFT JOIN historical_destinations hd ON rc.dst_ip = hd.dst_ip\nWHERE hd.dst_ip IS NULL  -- Never seen before\nORDER BY rc.timestamp DESC;",
+      "log_types": [
+        "Firewall",
+        "Network Logs",
+        "Proxy"
+      ],
+      "baseline_required": true
+    },
+    {
+      "anomaly_type": "Off-Hours Activity",
+      "description": "Detect APT33 techniques occurring during off-hours",
+      "sql_query": "\n-- Activity during unusual hours (customize for your organization)\nSELECT timestamp, host, user, process_name, command_line\nFROM process_logs\nWHERE (\n    -- Off-hours: Before 6 AM or after 8 PM, or weekends\n    EXTRACT(HOUR FROM timestamp) < 6 \n    OR EXTRACT(HOUR FROM timestamp) > 20\n    OR EXTRACT(DOW FROM timestamp) IN (0, 6)  -- Sunday, Saturday\n)\nAND (\n    process_name IN ('powershell.exe', 'cmd.exe', 'wscript.exe')\n    OR command_line LIKE '%net user%'\n    OR command_line LIKE '%net group%'\n    OR command_line LIKE '%psexec%'\n)\nORDER BY timestamp DESC;",
+      "log_types": [
+        "Windows Event Logs",
+        "Sysmon"
+      ],
+      "baseline_required": false
+    }
+  ]
+}
